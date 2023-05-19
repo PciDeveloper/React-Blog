@@ -2,6 +2,7 @@
 import './App.css';
 import { useState } from 'react';
 
+// 미리보기 화면 띄우기 npm start
 function App() {
   // 자료를 잠시 저장해놓고 싶을 때 useState 함수를 사용
   // a => useState 에 보관했던 자료
