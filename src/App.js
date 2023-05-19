@@ -1,4 +1,5 @@
 
+import React from 'react';
 import './App.css';
 import { useState } from 'react';
 
@@ -15,7 +16,8 @@ function App() {
   let [title, setTitle] = useState(['남자코트추천', '강남맛집', '파이썬독학']);
   let [like, setLike] = useState([0,0,0]);
   let [modal, setModal] = useState(false); // 모달창 디폴트 false
-  let [modalTitle, setModalTitle] = useState(0); // state 위치를 굳이 여기에 만들어야 하는 이유는 98 라인 확인
+  let [modalTitle, setModalTitle] = useState(0); // state 위치를 굳이 여기에 만들어야 하는 이유는 여러 App, Modal 여러 컴포넌트에서 사용하기 위함
+  let [input, setInput] = useState(''); // input 에 입력한 값 저장 state
 
   return (
     <div className="App">
@@ -46,18 +48,43 @@ function App() {
         title.map(function(a, i) {
           return (
             <div className='list' key={ i }>
-              <h4 onClick={ () => { setModal(!modal); setModalTitle(i) }}> { title[i] }
-                <span onClick={ ()=> {
+              <h4 onClick={ () => { setModal(true); setModalTitle(i) }}> { title[i] }
+                <span onClick={ (e)=> {
+                  e.stopPropagation(); // 이벤트 버블링 => 즉, span 태그를 눌렀는데 그 안에 요소인 h4 태그 모달창이 열리는 현상을 막아줌
                   let copy = [...like];
                   copy[i] = copy[i] + 1;
                   setLike(copy)}}>❤️
                 </span> { like[i] }
               </h4>
               <p>2023년 발행</p>
+
+              <button onClick={ () => { // 삭제 버튼을 누르면 동작하는 핸들러
+              
+                let copy = [...title];
+
+                // splice 메서드 => array 자료에서 원하는 항목을 삭제할 수 있음
+                // 첫번째 파라미터는 삭제할 index
+                // 두번째 파라미터는 삭제할 요소의 갯수
+                copy.splice(i, 2);
+                setTitle(copy);
+              }}>삭제</button>
             </div>
           )
         })
       }
+
+      {/* input 에 입력한 값을 가져오기 => 파라미터 e 추가 후 e.target.value
+          input 에 입력할 때마다 setInput state 에 저장됨 */}
+      <input onChange={ (e) => {
+        setInput(e.target.value);
+        console.log(input);
+      }} />
+
+      <button onClick={ () => { // input에 글 작성후 글발행 버튼을 눌렀을 때 동작하는 핸들러
+        let copy = [...title]; // 먼저, 글제목 원본 copy 
+        copy.unshift(input); // unshift 메서드 => array 배열에 자료 추가하는 함수에 input은 위에서 state 만들어논 입력값 변수명
+        setTitle(copy);
+      }}>글발행</button>
 
       {/* <Component>/</Component> 아래와 같은 방법으로도 사용 가능함 */}
       {/* 동적인 UI 만드는 방법 
@@ -69,11 +96,12 @@ function App() {
           // 부모 state 를 자식에게도 사용하게 해주고 싶다면(props) 2번의 step 이 있음
           // 컴포넌트 사용하는 곳에서 자유롭게 작명 해주고 사용하고싶은 state 이름을 적으면 됨
           // 보통 작명은 사용하고자 하는 state 와 동일하게 작명 하는 경우가 있음
-          // 자식 컴포넌트 Modal() 함수에서 파라미터를 추가해줌 보통 props 라고 작명을 많이 함
+          // 자식 컴포넌트 Modal() 함수에서 파라미터를 추가해줌 관례상 props 라고 작명
           // props 전송 사용 방법은 부모 -> 자식만 가능하고 자식 -> 부모는 안됨
-          modal === true ? <Modal modalTitle={ modalTitle } title={ title } /> : null
+          modal === true ? <Modal setTitle={ setTitle } modalTitle={ modalTitle } title={ title } color={ 'orange'} /> : null
         }
 
+        {/* <ClassModal></ClassModal> 옛날 방식 class 를 이용해서 컴포넌트 만들어봤음 */} 
     </div>
   );
 }
@@ -93,13 +121,15 @@ function App() {
 // state 를 가져다 쓰려면 props 방식을 사용하면 됨
 // 변수 선언을 const 로 하게되면 console 에 에러 메세지가 찍혀서 좋음
 function Modal(props) {
-  // let [modalTitle, setModalTitle] = useState(0); 이런식으로 여기에 선언해도 되지만
+  // let [modalTitle, setModalTitle] = useState(0); 여기에 선언해도 되지만 
+  // state 가 Modal, App 등등 여러곳에서 필요하다면 가장 상위 부모 컨포넌트에 만드는게 좋음
   return (
     <>
-      <div className='modal' style={{ background : 'orange' }}>
+      <div className='modal' style={{ background : props.color }}>
         <h4>{ props.title[props.modalTitle] }</h4>
-        {/** <h4>{ props.title[modalTitle] }</h4> 95번 라인에 state 선언 후 사용해도 되지만,
-          선언한 state가 Modal, App 등등 여러 함수 컴포넌트들에 필요하다면 가장 상위 컴포넌트에 보관하는게 좋음 패륜전송 불륜전송 X */} 
+        {/** <h4>{ props.title[modalTitle] }</h4> 96번 라인에 state 선언 후 사용해도 되지만,
+          선언한 state가 Modal, App 등등 여러 함수 컴포넌트들에 필요하다면 
+          가장 상위 부모 컴포넌트에 보관하는게 좋음 패륜전송 불륜전송이 안됨 */} 
         <p>날짜</p>
         <p>상세내용</p>
         <button>글수정</button>
@@ -107,5 +137,28 @@ function Modal(props) {
     </>
   )
 }
+
+// class 로 컴포넌트 만드는 방법 => 예전 스타일임. 요즘은 함수로 컴포넌트 만들어서 사용함
+// class 문법은 변수랑 함수를 많이 보관할 수 있음
+// 3개의 함수를 채워넣고 시작해야함 constructor, super, render
+// class ClassModal extends React.Component {
+//   constructor(props) { // this.
+//     super(props);
+//     this.state = { // class 컴포넌트에서 state 만드는 방법
+//       name : 'park',
+//       age : 20
+//     }
+//   }
+//   render() {
+//     return (
+//       <div>안녕{this.state.name}
+//         <button onClick={ () => {
+//           this.setState( { name : 'kim' } ); // class 컴포넌트에서 state 수정하는 방법
+//         }}>버튼</button>
+//           </div> // object 자료형에서 원하는 데이터 출력하는 방법
+//     )
+//   }
+
+// }
 
 export default App;
