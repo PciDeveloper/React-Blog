@@ -65,7 +65,7 @@ function App() {
                 // splice 메서드 => array 자료에서 원하는 항목을 삭제할 수 있음
                 // 첫번째 파라미터는 삭제할 index
                 // 두번째 파라미터는 삭제할 요소의 갯수
-                copy.splice(i, 2);
+                copy.splice(i, 1);
                 setTitle(copy);
               }}>삭제</button>
             </div>
